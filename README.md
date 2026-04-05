@@ -108,6 +108,55 @@ Add to your crontab (`crontab -e`):
 0 9 * * * cd /Users/codybontecou/dev/asc-daily-check && /usr/local/bin/node daily-sales.js --post >> /tmp/asc-daily.log 2>&1
 ```
 
+## Monthly Automation (GitHub Actions)
+
+The repo includes a GitHub Actions workflow that runs on the **1st of every month at 8:10 AM PST** and automatically posts to Twitter/X, LinkedIn, Threads, and Bluesky.
+
+### Required Secrets
+
+Add these secrets in your GitHub repo (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `ASC_KEY_ID` | App Store Connect API Key ID |
+| `ASC_ISSUER_ID` | App Store Connect Issuer ID |
+| `ASC_API_KEY` | Contents of your .p8 private key file |
+| `ASC_VENDOR_NUMBER` | Your vendor number (from Sales & Trends) |
+| `POST_BRIDGE_API_KEY` | Post Bridge API key (required for posting) |
+| `POST_BRIDGE_ACCOUNT_IDS` | Comma-separated account IDs (e.g., `123,456,789,012`) |
+
+### Finding Your ASC Credentials
+
+1. Go to [App Store Connect → Users and Access → Integrations → App Store Connect API](https://appstoreconnect.apple.com/access/integrations/api)
+2. Create a new key with "Sales and Reports" access
+3. Download the .p8 file and note the Key ID
+4. Copy the Issuer ID from the top of the page
+
+### Finding Your Post Bridge Account IDs
+
+1. Get your API key from [post-bridge.com](https://post-bridge.com)
+2. Run locally to see your connected accounts:
+   ```bash
+   node daily-sales.js --setup    # Configure API key
+   node daily-sales.js --accounts # List accounts with IDs
+   ```
+3. Copy the IDs for Twitter/X, LinkedIn, Threads, and Bluesky
+4. Add them as a comma-separated string to `POST_BRIDGE_ACCOUNT_IDS`
+
+Example output:
+```
+  𝕏 twitter: @codybontecou (ID: 123)
+  💌 linkedin: @cody-bontecou (ID: 456)
+  🧵 threads: @codybontecou (ID: 789)
+  🦋 bluesky: @cody.bsky.social (ID: 012)
+```
+
+Secret value: `123,456,789,012`
+
+### Manual Trigger
+
+You can manually run the workflow from the Actions tab in GitHub.
+
 ## Integration with PostRelay
 
 This tool uses the same **Post Bridge API** as the PostRelay iOS app. If you have accounts connected in PostRelay, they'll be available here too (using the same API key from post-bridge.com).

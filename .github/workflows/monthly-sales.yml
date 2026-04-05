@@ -1,0 +1,54 @@
+name: Monthly Sales Check
+
+on:
+  schedule:
+    # 8:10 AM PST on the 1st of every month = 16:10 UTC
+    - cron: '10 16 1 * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  check-sales:
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install asc CLI
+        run: npm install -g @mariozechner/asc
+
+      - name: Configure ASC credentials
+        run: |
+          mkdir -p ~/.asc
+          echo '${{ secrets.ASC_API_KEY }}' > ~/.asc/api-key.p8
+          cat > ~/.asc/config.json << EOF
+          {
+            "keyId": "${{ secrets.ASC_KEY_ID }}",
+            "issuerId": "${{ secrets.ASC_ISSUER_ID }}",
+            "privateKeyPath": "~/.asc/api-key.p8"
+          }
+          EOF
+
+      - name: Create config.json
+        run: |
+          cat > config.json << EOF
+          {
+            "asc": {
+              "vendorNumber": "${{ secrets.ASC_VENDOR_NUMBER }}"
+            },
+            "postBridge": {
+              "apiKey": "${{ secrets.POST_BRIDGE_API_KEY }}"
+            }
+          }
+          EOF
+
+      - name: Run sales check and post to social platforms
+        run: |
+          npm run check:yesterday -- --post --account ${{ secrets.POST_BRIDGE_ACCOUNT_IDS }}
+        env:
+          ASC_VENDOR_NUMBER: ${{ secrets.ASC_VENDOR_NUMBER }}
