@@ -4,12 +4,24 @@ Generate tweet-ready App Store sales summaries from your App Store Connect data.
 
 ## Example Output
 
+**Daily:**
 ```
 I made $47.99 on Apr 4.
 
 📝 Sync․md — 12 downloads ($23.99)
 ❤️ Health․md — 8 downloads
 💬 Instarep․ly — 3 downloads ($24.00)
+```
+
+**Monthly:**
+```
+I made $327.25 in March 2026.
+
+❤️ Health․md — 570 downloads ($263.99)
+📝 Sync․md — 577 downloads ($63.26)
+🖼️ imghost — 11 downloads
+🎙️ Voxboard — 11 downloads
+💬 Instarep․ly — 5 downloads
 ```
 
 ## Prerequisites
@@ -85,12 +97,36 @@ node daily-sales.js --json
 node daily-sales.js --all
 ```
 
+### Monthly Reports
+
+```bash
+# Generate monthly summary (aggregates all days, converts to USD)
+node daily-sales.js --month 2026-03
+
+# Previous month (auto-calculated)
+node daily-sales.js --month last
+
+# Monthly report as JSON
+node daily-sales.js --month last --json
+
+# Post monthly report to social media
+node daily-sales.js --month last --post --account 54185
+```
+
+Monthly reports:
+- Fetch daily sales data for every day in the month
+- Convert all currencies to USD using built-in exchange rates
+- Aggregate downloads and revenue by app
+- Generate a tweet-ready summary
+
 ### Using npm scripts
 
 ```bash
 npm run check              # Yesterday's sales
 npm run check:yesterday    # Same as above
 npm run check:date 2026-04-04  # Specific date
+npm run check:month 2026-03    # Specific month
+npm run check:last-month       # Previous month
 ```
 
 ## Optional: Auto-Post to Social Media
@@ -187,7 +223,15 @@ tail -f /tmp/asc-daily-check.error.log
 
 ## Optional: GitHub Actions (Monthly Reports)
 
-The included GitHub Action runs on the 1st of each month to generate and post a sales summary.
+The included GitHub Action runs on the **2nd of each month** at 8:10 AM PST to generate and post a monthly sales summary. It runs on the 2nd to ensure all data from the previous month is available.
+
+### What it does
+
+1. Fetches daily sales data for every day of the previous month
+2. Aggregates downloads and revenue by app (with USD conversion)
+3. Generates a tweet-ready summary
+4. Posts to your configured social accounts
+5. Saves the JSON report as a GitHub artifact (90-day retention)
 
 ### Setup
 
@@ -201,11 +245,18 @@ The included GitHub Action runs on the 1st of each month to generate and post a 
 | `ASC_ISSUER_ID` | Your issuer ID |
 | `ASC_VENDOR_NUMBER` | Your vendor number |
 | `POST_BRIDGE_API_KEY` | Your Post Bridge API key |
-| `POST_BRIDGE_ACCOUNT_IDS` | Comma-separated account IDs (e.g., `123,456`) |
+| `POST_BRIDGE_ACCOUNT_IDS` | Comma-separated account IDs (e.g., `54185,54226`) |
 
 ### Manual Trigger
 
-You can also trigger the workflow manually from the Actions tab in GitHub.
+You can trigger the workflow manually from the **Actions** tab in GitHub:
+
+1. Go to **Actions → Monthly Sales Report**
+2. Click **Run workflow**
+3. Optionally specify a month (e.g., `2026-03`) or leave as `last` for previous month
+4. Click **Run workflow**
+
+The workflow will generate the report, post to social media, and save the JSON as a downloadable artifact.
 
 ## Customization
 
